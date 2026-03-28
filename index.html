@@ -1,0 +1,984 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Folio — A Personal Library</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=DM+Serif+Display:ital@0;1&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --cream: #f5f0e8;
+    --warm-white: #faf7f2;
+    --ink: #1a1410;
+    --brown: #4a2c1a;
+    --sienna: #8b4513;
+    --gold: #c9a84c;
+    --rust: #b5451b;
+    --sage: #5a6b4f;
+    --muted: #7a6a5a;
+    --border: #d4c4b0;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background-color: var(--warm-white);
+    color: var(--ink);
+    font-family: 'Jost', sans-serif;
+    font-weight: 300;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── HEADER ── */
+  header {
+    position: sticky; top: 0; z-index: 100;
+    background: var(--ink);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 3rem;
+    height: 64px;
+    border-bottom: 2px solid var(--gold);
+  }
+
+  .logo {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.6rem;
+    font-weight: 900;
+    color: var(--cream);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .logo span { color: var(--gold); font-style: italic; }
+
+  nav { display: flex; gap: 2rem; }
+  nav a {
+    color: #b8a898;
+    text-decoration: none;
+    font-size: 0.8rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    transition: color 0.2s;
+  }
+  nav a:hover, nav a.active { color: var(--gold); }
+
+  .header-actions { display: flex; gap: 1rem; align-items: center; }
+
+  .btn-icon {
+    background: none; border: none; cursor: pointer;
+    color: #b8a898; font-size: 1.1rem;
+    transition: color 0.2s; padding: 4px;
+  }
+  .btn-icon:hover { color: var(--gold); }
+
+  /* ── HERO ── */
+  .hero {
+    background: var(--ink);
+    padding: 5rem 3rem 4rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 70% 50%, rgba(201,168,76,0.12) 0%, transparent 65%);
+  }
+
+  .hero-inner {
+    max-width: 1200px; margin: 0 auto;
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 4rem; align-items: center;
+    position: relative;
+  }
+
+  .hero-text h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(2.8rem, 5vw, 4.5rem);
+    color: var(--cream);
+    line-height: 1.1;
+    margin-bottom: 1.5rem;
+  }
+  .hero-text h1 em {
+    font-style: italic;
+    color: var(--gold);
+  }
+
+  .hero-text p {
+    color: #9a8a7a;
+    font-size: 1rem;
+    line-height: 1.8;
+    max-width: 420px;
+    margin-bottom: 2.5rem;
+  }
+
+  .hero-stats {
+    display: flex; gap: 2.5rem;
+  }
+  .stat { text-align: center; }
+  .stat-num {
+    font-family: 'Playfair Display', serif;
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--gold);
+    display: block;
+  }
+  .stat-label {
+    font-size: 0.7rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: #6a5a4a;
+    margin-top: 2px;
+  }
+
+  .hero-visual {
+    display: flex; justify-content: center; align-items: flex-end;
+    gap: 1rem; height: 260px;
+  }
+
+  .book-spine {
+    border-radius: 3px 8px 8px 3px;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+    display: flex; align-items: center; justify-content: center;
+    writing-mode: vertical-rl;
+    font-family: 'Playfair Display', serif;
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+    color: rgba(255,255,255,0.7);
+    box-shadow: -3px 3px 12px rgba(0,0,0,0.4), inset -2px 0 5px rgba(0,0,0,0.2);
+  }
+  .book-spine:hover { transform: translateY(-18px) rotate(-1deg); }
+
+  .bs1 { width: 36px; height: 200px; background: linear-gradient(180deg, #6b2d1a, #8b4513); }
+  .bs2 { width: 42px; height: 230px; background: linear-gradient(180deg, #2d4a3e, #3d6b56); }
+  .bs3 { width: 38px; height: 180px; background: linear-gradient(180deg, #1a2d4a, #2a4a7a); }
+  .bs4 { width: 44px; height: 245px; background: linear-gradient(180deg, #4a3a1a, #7a6030); }
+  .bs5 { width: 34px; height: 195px; background: linear-gradient(180deg, #4a1a2d, #8a3050); }
+  .bs6 { width: 40px; height: 220px; background: linear-gradient(180deg, #2d2d1a, #5a5a2a); }
+  .bs7 { width: 36px; height: 175px; background: linear-gradient(180deg, #3a1a4a, #6a3080); }
+
+  /* ── SEARCH BAR ── */
+  .search-section {
+    background: var(--cream);
+    padding: 2rem 3rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .search-inner {
+    max-width: 1200px; margin: 0 auto;
+    display: flex; gap: 1rem; align-items: center;
+  }
+  .search-wrap {
+    flex: 1; position: relative;
+  }
+  .search-wrap input {
+    width: 100%;
+    background: var(--warm-white);
+    border: 2px solid var(--border);
+    border-radius: 4px;
+    padding: 0.8rem 1rem 0.8rem 3rem;
+    font-family: 'Jost', sans-serif;
+    font-size: 0.9rem;
+    color: var(--ink);
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .search-wrap input:focus { border-color: var(--gold); }
+  .search-wrap input::placeholder { color: var(--muted); }
+  .search-icon {
+    position: absolute; left: 1rem; top: 50%; transform: translateY(-50%);
+    color: var(--muted); font-size: 0.9rem;
+  }
+
+  .filter-pills { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+  .pill {
+    background: none;
+    border: 1.5px solid var(--border);
+    border-radius: 2px;
+    padding: 0.45rem 1rem;
+    font-family: 'Jost', sans-serif;
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .pill:hover { border-color: var(--sienna); color: var(--sienna); }
+  .pill.active { background: var(--ink); border-color: var(--ink); color: var(--cream); }
+
+  /* ── MAIN CONTENT ── */
+  main {
+    max-width: 1200px; margin: 0 auto;
+    padding: 3rem;
+  }
+
+  .section-header {
+    display: flex; align-items: baseline; justify-content: space-between;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--ink);
+  }
+  .section-title span {
+    font-style: italic;
+    color: var(--sienna);
+  }
+  .section-link {
+    font-size: 0.75rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    text-decoration: none;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 2px;
+    transition: color 0.2s, border-color 0.2s;
+  }
+  .section-link:hover { color: var(--sienna); border-color: var(--sienna); }
+
+  /* ── FEATURED BOOK ── */
+  .featured {
+    background: var(--ink);
+    border-radius: 6px;
+    overflow: hidden;
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    margin-bottom: 4rem;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+  }
+
+  .featured-cover {
+    background: linear-gradient(145deg, #6b2d1a, #3a1209);
+    display: flex; align-items: center; justify-content: center;
+    padding: 2.5rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .featured-cover::after {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0;
+    height: 4px;
+    background: var(--gold);
+  }
+
+  .book-cover-art {
+    width: 140px; height: 200px;
+    background: linear-gradient(145deg, #8b4513, #5a2d0c);
+    border-radius: 3px 8px 8px 3px;
+    box-shadow: 6px 8px 24px rgba(0,0,0,0.6);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 1.5rem 1rem;
+    text-align: center;
+    border-left: 5px solid rgba(0,0,0,0.3);
+  }
+  .book-cover-art .cover-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--cream);
+    line-height: 1.3;
+    margin-bottom: 0.5rem;
+  }
+  .book-cover-art .cover-line {
+    width: 30px; height: 1px;
+    background: var(--gold); margin: 0.5rem auto;
+  }
+  .book-cover-art .cover-author {
+    font-size: 0.6rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgba(201,168,76,0.8);
+  }
+
+  .featured-info {
+    padding: 2.5rem 3rem;
+  }
+  .featured-badge {
+    display: inline-block;
+    background: var(--gold);
+    color: var(--ink);
+    font-size: 0.65rem;
+    font-weight: 500;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border-radius: 2px;
+    margin-bottom: 1.5rem;
+  }
+  .featured-info h2 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 2rem;
+    color: var(--cream);
+    line-height: 1.2;
+    margin-bottom: 0.5rem;
+  }
+  .featured-info .author {
+    font-size: 0.85rem;
+    color: var(--gold);
+    letter-spacing: 0.05em;
+    margin-bottom: 1.5rem;
+  }
+  .featured-info p {
+    color: #8a7a6a;
+    font-size: 0.9rem;
+    line-height: 1.8;
+    margin-bottom: 2rem;
+  }
+  .featured-meta {
+    display: flex; gap: 2rem; margin-bottom: 2rem;
+  }
+  .meta-item { display: flex; flex-direction: column; gap: 2px; }
+  .meta-label { font-size: 0.65rem; letter-spacing: 0.15em; text-transform: uppercase; color: #5a4a3a; }
+  .meta-value { font-size: 0.85rem; color: #9a8a7a; }
+
+  .stars { color: var(--gold); letter-spacing: 2px; font-size: 0.85rem; }
+
+  .btn-primary {
+    background: var(--gold);
+    color: var(--ink);
+    border: none;
+    padding: 0.75rem 2rem;
+    font-family: 'Jost', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    cursor: pointer;
+    border-radius: 3px;
+    transition: all 0.2s;
+    margin-right: 1rem;
+  }
+  .btn-primary:hover { background: #dbb85c; transform: translateY(-1px); }
+
+  .btn-secondary {
+    background: none;
+    color: #7a6a5a;
+    border: 1.5px solid #3a2a1a;
+    padding: 0.75rem 2rem;
+    font-family: 'Jost', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    cursor: pointer;
+    border-radius: 3px;
+    transition: all 0.2s;
+  }
+  .btn-secondary:hover { border-color: var(--gold); color: var(--gold); }
+
+  /* ── BOOK GRID ── */
+  .book-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 2rem;
+    margin-bottom: 4rem;
+  }
+
+  .book-card {
+    cursor: pointer;
+    transition: transform 0.3s ease;
+  }
+  .book-card:hover { transform: translateY(-6px); }
+  .book-card:hover .card-cover { box-shadow: 0 20px 40px rgba(0,0,0,0.18); }
+
+  .card-cover {
+    height: 240px;
+    border-radius: 3px 8px 8px 3px;
+    box-shadow: 4px 6px 20px rgba(0,0,0,0.12);
+    transition: box-shadow 0.3s;
+    display: flex; align-items: flex-end;
+    padding: 1rem;
+    position: relative;
+    overflow: hidden;
+    border-left: 5px solid rgba(0,0,0,0.2);
+  }
+
+  .card-cover::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 50%);
+  }
+
+  .card-cover-text {
+    position: relative; z-index: 1;
+  }
+  .card-cover-text .ctitle {
+    font-family: 'Playfair Display', serif;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #fff;
+    line-height: 1.3;
+  }
+  .card-cover-text .cauthor {
+    font-size: 0.65rem;
+    color: rgba(255,255,255,0.6);
+    margin-top: 2px;
+  }
+
+  .card-info { padding: 0.9rem 0; }
+  .card-genre {
+    font-size: 0.65rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 4px;
+  }
+  .card-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--ink);
+    line-height: 1.3;
+    margin-bottom: 4px;
+  }
+  .card-author {
+    font-size: 0.78rem;
+    color: var(--muted);
+  }
+  .card-rating {
+    display: flex; align-items: center; gap: 4px;
+    margin-top: 6px;
+  }
+  .card-stars { color: var(--gold); font-size: 0.7rem; }
+  .card-num { font-size: 0.7rem; color: var(--muted); }
+
+  /* ── READING LIST ── */
+  .reading-list {
+    background: var(--cream);
+    border-radius: 6px;
+    padding: 2rem;
+    margin-bottom: 4rem;
+    border: 1px solid var(--border);
+  }
+  .reading-list-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    color: var(--ink);
+  }
+  .reading-item {
+    display: flex; align-items: center;
+    gap: 1.2rem;
+    padding: 1rem 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .reading-item:last-child { border-bottom: none; }
+
+  .reading-num {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--border);
+    width: 2rem;
+    text-align: center;
+    flex-shrink: 0;
+  }
+
+  .reading-mini-cover {
+    width: 44px; height: 64px;
+    border-radius: 2px 5px 5px 2px;
+    flex-shrink: 0;
+    border-left: 3px solid rgba(0,0,0,0.2);
+    box-shadow: 2px 3px 8px rgba(0,0,0,0.15);
+  }
+  .reading-info { flex: 1; }
+  .reading-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--ink);
+    margin-bottom: 2px;
+  }
+  .reading-author { font-size: 0.78rem; color: var(--muted); }
+
+  .reading-progress { width: 120px; }
+  .progress-bar {
+    height: 3px;
+    background: var(--border);
+    border-radius: 2px;
+    margin-bottom: 4px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%; border-radius: 2px;
+    background: linear-gradient(90deg, var(--sienna), var(--gold));
+  }
+  .progress-label { font-size: 0.7rem; color: var(--muted); text-align: right; }
+
+  /* ── GENRES SECTION ── */
+  .genre-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 1rem;
+    margin-bottom: 4rem;
+  }
+
+  .genre-card {
+    padding: 1.5rem 1rem;
+    border-radius: 4px;
+    text-align: center;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    border: 1px solid var(--border);
+  }
+  .genre-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.1); }
+
+  .genre-icon { font-size: 1.8rem; margin-bottom: 0.5rem; display: block; }
+  .genre-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--ink);
+    margin-bottom: 2px;
+  }
+  .genre-count { font-size: 0.7rem; color: var(--muted); }
+
+  /* ── FOOTER ── */
+  footer {
+    background: var(--ink);
+    padding: 3rem;
+    color: #5a4a3a;
+  }
+  .footer-inner {
+    max-width: 1200px; margin: 0 auto;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .footer-logo {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.2rem;
+    font-weight: 900;
+    color: #3a2a1a;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .footer-logo span { color: var(--gold); font-style: italic; }
+  .footer-copy { font-size: 0.75rem; color: #3a2a1a; }
+
+  /* ── MODAL ── */
+  .modal-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(20,14,8,0.85);
+    z-index: 1000;
+    align-items: center; justify-content: center;
+    backdrop-filter: blur(4px);
+  }
+  .modal-overlay.open { display: flex; }
+
+  .modal {
+    background: var(--warm-white);
+    border-radius: 6px;
+    max-width: 520px; width: 90%;
+    overflow: hidden;
+    box-shadow: 0 40px 100px rgba(0,0,0,0.5);
+    animation: modalIn 0.3s ease;
+  }
+  @keyframes modalIn {
+    from { opacity: 0; transform: translateY(20px) scale(0.96); }
+    to   { opacity: 1; transform: none; }
+  }
+
+  .modal-cover {
+    height: 180px;
+    display: flex; align-items: center; justify-content: center;
+    position: relative;
+  }
+  .modal-close {
+    position: absolute; top: 1rem; right: 1rem;
+    background: rgba(0,0,0,0.3); border: none; border-radius: 50%;
+    width: 32px; height: 32px;
+    color: #fff; font-size: 1rem; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .modal-body { padding: 2rem; }
+  .modal-genre { font-size: 0.65rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+  .modal-title { font-family: 'DM Serif Display', serif; font-size: 1.6rem; color: var(--ink); margin-bottom: 4px; }
+  .modal-author { font-size: 0.85rem; color: var(--sienna); margin-bottom: 1rem; }
+  .modal-desc { font-size: 0.88rem; color: var(--muted); line-height: 1.75; margin-bottom: 1.5rem; }
+  .modal-actions { display: flex; gap: 0.75rem; }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to   { opacity: 1; transform: none; }
+  }
+  .fade-up { animation: fadeUp 0.6s ease both; }
+  .fade-up-1 { animation-delay: 0.05s; }
+  .fade-up-2 { animation-delay: 0.12s; }
+  .fade-up-3 { animation-delay: 0.19s; }
+  .fade-up-4 { animation-delay: 0.26s; }
+  .fade-up-5 { animation-delay: 0.33s; }
+  .fade-up-6 { animation-delay: 0.40s; }
+
+  @media (max-width: 768px) {
+    header { padding: 0 1.5rem; }
+    nav { display: none; }
+    .hero-inner { grid-template-columns: 1fr; }
+    .hero-visual { display: none; }
+    .featured { grid-template-columns: 1fr; }
+    .featured-cover { display: none; }
+    main { padding: 2rem 1.5rem; }
+    .search-section { padding: 1.5rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="logo">F<span>o</span>lio</div>
+  <nav>
+    <a href="#" class="active">Browse</a>
+    <a href="#">My Library</a>
+    <a href="#">Reading Lists</a>
+    <a href="#">New Arrivals</a>
+    <a href="#">About</a>
+  </nav>
+  <div class="header-actions">
+    <button class="btn-icon" title="Search">⌕</button>
+    <button class="btn-icon" title="Bookmarks">⊹</button>
+    <button class="btn-icon" title="Profile">◎</button>
+  </div>
+</header>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-inner">
+    <div class="hero-text fade-up">
+      <h1>Every great story<br>deserves a <em>home.</em></h1>
+      <p>Curate your personal library. Discover new voices. Track your reading journey across every genre and era.</p>
+      <div class="hero-stats">
+        <div class="stat">
+          <span class="stat-num">12,400</span>
+          <span class="stat-label">Titles</span>
+        </div>
+        <div class="stat">
+          <span class="stat-num">840</span>
+          <span class="stat-label">Authors</span>
+        </div>
+        <div class="stat">
+          <span class="stat-num">38</span>
+          <span class="stat-label">Genres</span>
+        </div>
+      </div>
+    </div>
+    <div class="hero-visual fade-up fade-up-2">
+      <div class="book-spine bs1">Dostoevsky</div>
+      <div class="book-spine bs2">Morrison</div>
+      <div class="book-spine bs3">Borges</div>
+      <div class="book-spine bs4">Woolf</div>
+      <div class="book-spine bs5">Nabokov</div>
+      <div class="book-spine bs6">Achebe</div>
+      <div class="book-spine bs7">Calvino</div>
+    </div>
+  </div>
+</section>
+
+<!-- SEARCH -->
+<section class="search-section">
+  <div class="search-inner">
+    <div class="search-wrap">
+      <span class="search-icon">⌕</span>
+      <input type="text" id="searchInput" placeholder="Search titles, authors, ISBN…" oninput="filterBooks()">
+    </div>
+    <div class="filter-pills">
+      <button class="pill active" onclick="setFilter(this,'all')">All</button>
+      <button class="pill" onclick="setFilter(this,'fiction')">Fiction</button>
+      <button class="pill" onclick="setFilter(this,'non-fiction')">Non-Fiction</button>
+      <button class="pill" onclick="setFilter(this,'classic')">Classics</button>
+      <button class="pill" onclick="setFilter(this,'philosophy')">Philosophy</button>
+    </div>
+  </div>
+</section>
+
+<!-- MAIN -->
+<main>
+
+  <!-- FEATURED -->
+  <div class="section-header">
+    <h2 class="section-title">Editor's <span>Pick</span></h2>
+  </div>
+
+  <div class="featured fade-up">
+    <div class="featured-cover">
+      <div class="book-cover-art">
+        <div class="cover-title">The Brothers Karamazov</div>
+        <div class="cover-line"></div>
+        <div class="cover-author">Fyodor Dostoevsky</div>
+      </div>
+    </div>
+    <div class="featured-info">
+      <span class="featured-badge">Editor's Pick</span>
+      <h2>The Brothers Karamazov</h2>
+      <div class="author">Fyodor Dostoevsky · 1880</div>
+      <p>A passionate philosophical novel set in 19th-century Russia, exploring faith, doubt, reason, and free will through the turbulent lives of three brothers and their dissolute father. Often regarded as the culmination of Dostoevsky's life's work.</p>
+      <div class="featured-meta">
+        <div class="meta-item">
+          <span class="meta-label">Genre</span>
+          <span class="meta-value">Classic Fiction</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label">Pages</span>
+          <span class="meta-value">796</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label">Rating</span>
+          <span class="meta-value stars">★★★★★ 4.9</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label">Language</span>
+          <span class="meta-value">Russian / EN</span>
+        </div>
+      </div>
+      <button class="btn-primary">Add to Library</button>
+      <button class="btn-secondary">Read Preview</button>
+    </div>
+  </div>
+
+  <!-- BOOKS GRID -->
+  <div class="section-header" style="margin-top:3rem;">
+    <h2 class="section-title">Browse <span>Collection</span></h2>
+    <a href="#" class="section-link">View All →</a>
+  </div>
+
+  <div class="book-grid" id="bookGrid">
+    <!-- Cards injected by JS -->
+  </div>
+
+  <!-- CURRENTLY READING -->
+  <div class="section-header">
+    <h2 class="section-title">Currently <span>Reading</span></h2>
+    <a href="#" class="section-link">My Library →</a>
+  </div>
+
+  <div class="reading-list">
+    <div class="reading-item">
+      <div class="reading-num">1</div>
+      <div class="reading-mini-cover" style="background:linear-gradient(145deg,#2d4a3e,#1a2d26);"></div>
+      <div class="reading-info">
+        <div class="reading-title">Beloved</div>
+        <div class="reading-author">Toni Morrison</div>
+      </div>
+      <div class="reading-progress">
+        <div class="progress-bar"><div class="progress-fill" style="width:72%"></div></div>
+        <div class="progress-label">72% · 215 pp left</div>
+      </div>
+    </div>
+    <div class="reading-item">
+      <div class="reading-num">2</div>
+      <div class="reading-mini-cover" style="background:linear-gradient(145deg,#4a3a1a,#7a6030);"></div>
+      <div class="reading-info">
+        <div class="reading-title">Invisible Man</div>
+        <div class="reading-author">Ralph Ellison</div>
+      </div>
+      <div class="reading-progress">
+        <div class="progress-bar"><div class="progress-fill" style="width:38%"></div></div>
+        <div class="progress-label">38% · 310 pp left</div>
+      </div>
+    </div>
+    <div class="reading-item">
+      <div class="reading-num">3</div>
+      <div class="reading-mini-cover" style="background:linear-gradient(145deg,#3a1a4a,#6a3080);"></div>
+      <div class="reading-info">
+        <div class="reading-title">Ficciones</div>
+        <div class="reading-author">Jorge Luis Borges</div>
+      </div>
+      <div class="reading-progress">
+        <div class="progress-bar"><div class="progress-fill" style="width:91%"></div></div>
+        <div class="progress-label">91% · 14 pp left</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- GENRES -->
+  <div class="section-header">
+    <h2 class="section-title">Browse by <span>Genre</span></h2>
+  </div>
+
+  <div class="genre-grid">
+    <div class="genre-card" style="background:#f5ede0;">
+      <span class="genre-icon">📖</span>
+      <div class="genre-name">Classics</div>
+      <div class="genre-count">1,240 titles</div>
+    </div>
+    <div class="genre-card" style="background:#e8f0ea;">
+      <span class="genre-icon">🌿</span>
+      <div class="genre-name">Philosophy</div>
+      <div class="genre-count">680 titles</div>
+    </div>
+    <div class="genre-card" style="background:#e8e8f5;">
+      <span class="genre-icon">🔭</span>
+      <div class="genre-name">Sci-Fi</div>
+      <div class="genre-count">920 titles</div>
+    </div>
+    <div class="genre-card" style="background:#f5e8e8;">
+      <span class="genre-icon">🕵️</span>
+      <div class="genre-name">Mystery</div>
+      <div class="genre-count">1,100 titles</div>
+    </div>
+    <div class="genre-card" style="background:#f0f5e8;">
+      <span class="genre-icon">🌍</span>
+      <div class="genre-name">History</div>
+      <div class="genre-count">750 titles</div>
+    </div>
+    <div class="genre-card" style="background:#f5f0e0;">
+      <span class="genre-icon">🎭</span>
+      <div class="genre-name">Drama</div>
+      <div class="genre-count">540 titles</div>
+    </div>
+    <div class="genre-card" style="background:#e8f5f5;">
+      <span class="genre-icon">💡</span>
+      <div class="genre-name">Self-Help</div>
+      <div class="genre-count">430 titles</div>
+    </div>
+    <div class="genre-card" style="background:#f5e8f5;">
+      <span class="genre-icon">🧬</span>
+      <div class="genre-name">Science</div>
+      <div class="genre-count">610 titles</div>
+    </div>
+  </div>
+
+</main>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-logo">F<span>o</span>lio</div>
+    <div class="footer-copy">© 2026 Folio Library. All rights reserved.</div>
+  </div>
+</footer>
+
+<!-- BOOK MODAL -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <div class="modal-cover" id="modalCover">
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-genre" id="modalGenre"></div>
+      <div class="modal-title" id="modalTitle"></div>
+      <div class="modal-author" id="modalAuthor"></div>
+      <div class="modal-desc" id="modalDesc"></div>
+      <div class="modal-actions">
+        <button class="btn-primary">Add to Library</button>
+        <button class="btn-secondary" onclick="closeModal()">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const books = [
+  { id:1, title:"To the Lighthouse", author:"Virginia Woolf", genre:"Classic Fiction", filter:"classic",
+    color:"linear-gradient(145deg,#2d4a5a,#1a3040)", rating:"4.8", reviews:"2.1k",
+    desc:"A luminous modernist novel set on the Isle of Skye, exploring the passage of time and the nature of consciousness through the Ramsay family." },
+  { id:2, title:"One Hundred Years of Solitude", author:"Gabriel García Márquez", genre:"Magic Realism", filter:"fiction",
+    color:"linear-gradient(145deg,#4a2d1a,#7a4a2d)", rating:"4.9", reviews:"3.4k",
+    desc:"The multi-generational saga of the Buendía family in the fictional town of Macondo, blending reality and fantasy into an unforgettable tapestry." },
+  { id:3, title:"Meditations", author:"Marcus Aurelius", genre:"Philosophy", filter:"philosophy",
+    color:"linear-gradient(145deg,#3a3a2d,#5a5a3a)", rating:"4.7", reviews:"5.6k",
+    desc:"Personal writings of a Roman Emperor practicing Stoic philosophy—timeless reflections on virtue, duty, mortality, and the nature of the self." },
+  { id:4, title:"Things Fall Apart", author:"Chinua Achebe", genre:"Classic Fiction", filter:"classic",
+    color:"linear-gradient(145deg,#4a1a1a,#7a3030)", rating:"4.6", reviews:"2.8k",
+    desc:"A landmark work of African literature about Okonkwo, an Igbo warrior, and the clash between tradition and the colonial forces disrupting Nigeria." },
+  { id:5, title:"Pale Fire", author:"Vladimir Nabokov", genre:"Postmodern Fiction", filter:"fiction",
+    color:"linear-gradient(145deg,#1a2d4a,#2a4a7a)", rating:"4.5", reviews:"1.2k",
+    desc:"An audaciously constructed novel told through a 999-line poem and the obsessive commentary of a deluded scholar—a labyrinth of unreliable narration." },
+  { id:6, title:"If on a winter's night…", author:"Italo Calvino", genre:"Postmodern Fiction", filter:"fiction",
+    color:"linear-gradient(145deg,#2d3a4a,#3a5060)", rating:"4.4", reviews:"980",
+    desc:"A novel-about-novels in which You, the reader, embark on a journey through ten interrupted beginnings, each a different genre and style." },
+  { id:7, title:"Siddhartha", author:"Hermann Hesse", genre:"Philosophy", filter:"philosophy",
+    color:"linear-gradient(145deg,#3a4a2d,#5a6a3a)", rating:"4.6", reviews:"4.1k",
+    desc:"The spiritual journey of Siddhartha, a young Brahmin who seeks enlightenment through experience, love, wealth, and ultimately, the river." },
+  { id:8, title:"Never Let Me Go", author:"Kazuo Ishiguro", genre:"Literary Fiction", filter:"fiction",
+    color:"linear-gradient(145deg,#3a2d4a,#5a4a6a)", rating:"4.3", reviews:"1.7k",
+    desc:"A haunting, quietly devastating novel about childhood, memory, and mortality—narrated by a woman reflecting on her upbringing at a mysterious English school." },
+  { id:9, title:"The Republic", author:"Plato", genre:"Philosophy", filter:"philosophy",
+    color:"linear-gradient(145deg,#4a3a1a,#6a5a2a)", rating:"4.2", reviews:"3.0k",
+    desc:"Plato's masterwork on justice, the ideal city-state, and the philosopher-king—foundational to Western political thought and moral philosophy." },
+  { id:10, title:"Invisible Cities", author:"Italo Calvino", genre:"Magic Realism", filter:"fiction",
+    color:"linear-gradient(145deg,#1a3a3a,#2a5a5a)", rating:"4.7", reviews:"1.5k",
+    desc:"Marco Polo describes 55 fantastical cities to Kublai Khan—each a meditation on memory, desire, language, and the nature of civilization itself." },
+  { id:11, title:"Crime and Punishment", author:"Fyodor Dostoevsky", genre:"Classic Fiction", filter:"classic",
+    color:"linear-gradient(145deg,#3a1a1a,#6a2a2a)", rating:"4.8", reviews:"3.9k",
+    desc:"The psychological portrait of Raskolnikov, a student who commits murder to test his theory of extraordinary men—and the spiritual reckoning that follows." },
+  { id:12, title:"Sapiens", author:"Yuval Noah Harari", genre:"Non-Fiction", filter:"non-fiction",
+    color:"linear-gradient(145deg,#1a1a3a,#2a2a6a)", rating:"4.4", reviews:"8.2k",
+    desc:"A sweeping history of humankind from the Stone Age through the present day, examining the cognitive, agricultural, and scientific revolutions that shaped us." },
+];
+
+let activeFilter = 'all';
+
+function renderBooks(list) {
+  const grid = document.getElementById('bookGrid');
+  grid.innerHTML = '';
+  list.forEach((b, i) => {
+    const card = document.createElement('div');
+    card.className = `book-card fade-up fade-up-${(i % 6) + 1}`;
+    card.innerHTML = `
+      <div class="card-cover" style="background:${b.color}" onclick="openModal(${b.id})">
+        <div class="card-cover-text">
+          <div class="ctitle">${b.title}</div>
+          <div class="cauthor">${b.author}</div>
+        </div>
+      </div>
+      <div class="card-info">
+        <div class="card-genre">${b.genre}</div>
+        <div class="card-title">${b.title}</div>
+        <div class="card-author">${b.author}</div>
+        <div class="card-rating">
+          <span class="card-stars">★★★★★</span>
+          <span class="card-num">${b.rating} (${b.reviews})</span>
+        </div>
+      </div>
+    `;
+    grid.appendChild(card);
+  });
+}
+
+function filterBooks() {
+  const q = document.getElementById('searchInput').value.toLowerCase();
+  let list = books.filter(b =>
+    (activeFilter === 'all' || b.filter === activeFilter) &&
+    (b.title.toLowerCase().includes(q) || b.author.toLowerCase().includes(q) || b.genre.toLowerCase().includes(q))
+  );
+  renderBooks(list);
+}
+
+function setFilter(btn, filter) {
+  activeFilter = filter;
+  document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  filterBooks();
+}
+
+function openModal(id) {
+  const b = books.find(x => x.id === id);
+  document.getElementById('modalCover').style.background = b.color;
+  document.getElementById('modalGenre').textContent = b.genre;
+  document.getElementById('modalTitle').textContent = b.title;
+  document.getElementById('modalAuthor').textContent = b.author + ' · ★ ' + b.rating;
+  document.getElementById('modalDesc').textContent = b.desc;
+  document.getElementById('modal').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('modal').classList.remove('open');
+}
+
+document.getElementById('modal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+
+renderBooks(books);
+</script>
+</body>
+</html>
